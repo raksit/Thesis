@@ -1,0 +1,55 @@
+#include "opencv2/opencv.hpp"
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+
+/* GLOBAL VARIABLE */
+float width, height;
+float brightness, contrast, saturation;
+
+int main()
+{
+
+		VideoCapture cap(0); // open the default camera
+		if (!cap.isOpened())  // check if we succeeded
+			return -1;
+
+		namedWindow("Video", 1);
+		while (1)
+		{
+			Mat img;
+			cap >> img;         // get a new frame from camera
+			imshow("Video", img);
+
+			vector<Mat> channels;
+			Mat img_hist_equalized;
+
+			cvtColor(img, img_hist_equalized, CV_BGR2YCrCb); //change the color image from BGR to YCrCb format
+
+			split(img_hist_equalized, channels); //split the image into channels
+
+			equalizeHist(channels[0], channels[0]); //equalize histogram on the 1st channel (Y)
+
+			merge(channels, img_hist_equalized); //merge 3 channels including the modified 1st channel into one image
+
+			cvtColor(img_hist_equalized, img_hist_equalized, CV_YCrCb2BGR); //change the color image from YCrCb to BGR format (to display image properly)
+
+			//create windows
+			namedWindow("Original Image", CV_WINDOW_AUTOSIZE);
+			namedWindow("Histogram Equalized", CV_WINDOW_AUTOSIZE);
+
+			//show the image
+			imshow("Original Image", img);
+			imshow("Histogram Equalized", img_hist_equalized);
+
+			// Press 'c' to escape
+			if (waitKey(30) == 'c') break;
+		}
+	destroyAllWindows(); //destroy all open windows
+
+	return 0;
+}
